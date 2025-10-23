@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'jdk17'
+        maven 'Maven 3.8.7'
+    }
+
+    stages {
+        stage('Verify Setup') {
+            steps {
+                echo '🔍 Checking system setup...'
+                sh 'java -version'
+                sh 'mvn -version'
+                sh 'git --version'
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                echo '📦 Cloning source code from GitHub...'
+                git branch: 'main', url: 'https://github.com/maheshbommu/spring-petclinic123.git'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                echo '🚀 Building Spring PetClinic application...'
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Archive Artifact') {
+            steps {
+                echo '📁 Archiving the generated JAR/WAR file...'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build successful!'
+        }
+        failure {
+            echo '❌ Build failed. Check console output for details.'
+        }
+    }
+}
+
